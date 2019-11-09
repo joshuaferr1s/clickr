@@ -8,8 +8,8 @@
       <v-spacer></v-spacer>
 
       <v-toolbar-items v-if="user" class="d-none d-sm-flex">
-        <v-btn text>Movies</v-btn>
-        <v-btn text>Account</v-btn>
+        <v-btn text to="movies">Movies</v-btn>
+        <v-btn text to="account">Account</v-btn>
         <v-btn
           text
           @click="logout"

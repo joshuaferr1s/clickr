@@ -5,15 +5,16 @@
     </template>
     <v-card>
       <v-card-title class="headline grey lighten-2" primary-title>Add New Movie</v-card-title>
-      <v-alert
-        v-model="alert.show"
-        :type="alert.type"
-        dismissible
-        @input="setAlert(false, null, null)"
-      >
-        {{ alert.message }}
-      </v-alert>
-      <v-card-text>
+      <v-card-text class="mt-3">
+        <v-alert
+          v-model="alert.show"
+          :type="alert.type"
+          border="left"
+          dismissible
+          @input="setAlert(false, null, null)"
+        >
+          {{ alert.message }}
+        </v-alert>
         <v-text-field v-model="movie" label="Movie Title"></v-text-field>
       </v-card-text>
       <v-divider></v-divider>

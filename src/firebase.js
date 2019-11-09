@@ -18,8 +18,6 @@ export const firebaseAuth = firebase.auth;
 
 Firebase.addMovie = async (payload) => {
   try {
-    const query = await db.collection('movies').where('movie', '==', payload).get();
-    if (query.docs.length !== 0) throw new Error('Movie already exists in the database.');
     await db.collection('movies').add({
       movie: payload,
       tp: 0,
@@ -38,11 +36,130 @@ Firebase.addMovie = async (payload) => {
   }
 };
 
+Firebase.updateMovie = async (payload) => {
+  try {
+    const { id, movie } = payload;
+    const doc = await db.collection('movies').doc(id).get();
+    if (!doc.exists) throw new Error('Movie does not exist in the database.');
+    await doc.ref.update({ movie });
+    return true;
+  } catch (error) {
+    return error;
+  }
+};
+
+Firebase.recordMovie = async (payload) => {
+  try {
+    const {
+      id, type, value, total,
+    } = payload;
+    const doc = await db.collection('movies').doc(id).get();
+    if (!doc.exists) throw new Error('Movie does not exist in the database.');
+    await doc.ref.update({ [type]: value, total });
+    return true;
+  } catch (error) {
+    return error;
+  }
+};
+
 Firebase.deleteMovie = async (payload) => {
   try {
     const doc = await db.collection('movies').doc(payload).get();
     await doc.ref.delete();
     return true;
+  } catch (error) {
+    return error;
+  }
+};
+
+Firebase.newUser = async (payload) => {
+  try {
+    const {
+      displayName, photoURL, email, id,
+    } = payload;
+    Promise.all([
+      db.collection('users').doc(id).set({
+        displayName,
+        photoURL,
+        email,
+      }),
+      db.collection('allowed').doc(id).set({
+        allowed: false,
+      }),
+      db.collection('admins').doc(id).set({
+        admin: false,
+      }),
+    ]);
+    return true;
+  } catch (error) {
+    return error;
+  }
+};
+
+Firebase.isAllowed = async (payload) => {
+  try {
+    const doc = await db.collection('allowed').doc(payload).get();
+    if (!doc.exists) throw new Error('User is not allowed.');
+    return doc.data().allowed;
+  } catch (error) {
+    return false;
+  }
+};
+
+Firebase.updateAllowed = async (payload) => {
+  try {
+    const { id, allowed } = payload;
+    const doc = await db.collection('allowed').doc(id).get();
+    if (!doc.exists) throw new Error('User is not allowed.');
+    doc.ref.update({ allowed });
+    return true;
+  } catch (error) {
+    return error;
+  }
+};
+
+Firebase.isAdmin = async (payload) => {
+  try {
+    const doc = await db.collection('admins').doc(payload).get();
+    if (!doc.exists) throw new Error('User is not an admin.');
+    return doc.data().admin;
+  } catch (error) {
+    return false;
+  }
+};
+
+Firebase.updateAdmin = async (payload) => {
+  try {
+    const { id, admin } = payload;
+    const doc = await db.collection('admins').doc(id).get();
+    if (!doc.exists) throw new Error('User is not an admin.');
+    doc.ref.update({ admin });
+    return true;
+  } catch (error) {
+    return error;
+  }
+};
+
+Firebase.getUsers = async () => {
+  try {
+    const usersQuerySnapshot = await db.collection('users').get();
+    const allowedQuerySnapshot = await db.collection('allowed').get();
+    const adminsQuerySnapshot = await db.collection('admins').get();
+    const allowed = allowedQuerySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const admins = adminsQuerySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const users = usersQuerySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      allowed: allowed.find(el => el.id === doc.id).allowed,
+      admin: admins.find(el => el.id === doc.id).admin,
+    }));
+    return users;
   } catch (error) {
     return error;
   }

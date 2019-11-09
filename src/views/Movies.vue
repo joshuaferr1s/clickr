@@ -20,13 +20,49 @@
       sort-by="movie"
       :loading="loading"
     >
+      <template v-slot:top>
+        <v-alert
+          v-model="alert.show"
+          :type="alert.type"
+          border="left"
+          dismissible
+          @input="setAlert(false, null, null)"
+        >
+          {{ alert.message }}
+        </v-alert>
+      </template>
+      <template v-slot:item.movie="{ item }">
+        <v-edit-dialog
+          :return-value.sync="item.movie"
+          @save="updateMovieTitle(item.id, item.movie)"
+        >
+          {{ item.movie }}
+          <template v-slot:input>
+            <v-text-field
+              v-model="item.movie"
+              label="Edit"
+              single-line
+            ></v-text-field>
+          </template>
+        </v-edit-dialog>
+      </template>
       <template v-slot:item.actions="{ item }">
         <td class="text-xs-left" style="width: 8rem">
-          <v-select
-            @change="(action) => selectChanged(action, item)"
-            :items="actions"
-            label="Actions"
-          ></v-select>
+          <v-icon
+            small
+            color="green"
+            class="mr-2"
+            @click="recordMovie(item.id)"
+          >
+            mdi-filmstrip
+          </v-icon>
+          <v-icon
+            small
+            color="error"
+            @click="deleteMovie(item.id)"
+          >
+            mdi-delete
+          </v-icon>
         </td>
       </template>
       <template v-slot:no-data>
@@ -49,6 +85,7 @@ export default {
     AddMovie,
   },
   data: () => ({
+    unsubscribe: null,
     search: '',
     loading: false,
     headers: [
@@ -70,22 +107,47 @@ export default {
       'Edit',
       'Delete',
     ],
+    alert: {
+      show: false,
+      type: null,
+      message: null,
+    },
   }),
   methods: {
-    async selectChanged(action, item) {
+    setAlert(show, type, message) {
+      this.alert.show = show;
+      this.alert.type = type;
+      this.alert.message = message;
+    },
+    resetDialog() {
+      this.movie = '';
+      this.dialog = false;
+    },
+    recordMovie(id) {
+      this.$router.push({ name: 'record', params: { id } });
+    },
+    async updateMovieTitle(id, movie) {
       this.loading = true;
       try {
-        if (action === 'Delete') {
-          await Firebase.deleteMovie(item.id);
-        }
+        const result = await Firebase.updateMovie({ id, movie });
+        if (result.message) throw new Error(result.message);
       } catch (error) {
-        console.log(error);
+        this.setAlert(true, 'error', error.message);
+      }
+      this.loading = false;
+    },
+    async deleteMovie(id) {
+      this.loading = true;
+      try {
+        await Firebase.deleteMovie(id);
+      } catch (error) {
+        this.setAlert(true, 'error', error.message);
       }
       this.loading = false;
     },
   },
   created() {
-    db.collection('movies').onSnapshot((snapshot) => {
+    this.unsubscribe = db.collection('movies').onSnapshot((snapshot) => {
       const changes = snapshot.docChanges();
 
       changes.forEach((change) => {
@@ -100,6 +162,9 @@ export default {
         }
       });
     });
+  },
+  beforeDestroy() {
+    this.unsubscribe();
   },
 };
 </script>
