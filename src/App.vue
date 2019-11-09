@@ -120,6 +120,7 @@ export default {
         this.authenticating = true;
         await Firebase.login();
       } catch (error) {
+        // eslint-disable-next-line
         console.log(error);
       }
       this.authenticating = false;
@@ -129,6 +130,7 @@ export default {
         this.authenticating = true;
         await firebaseAuth().signOut();
       } catch (error) {
+        // eslint-disable-next-line
         console.log(error);
       }
       this.authenticating = false;
