@@ -57,13 +57,11 @@
           >
             mdi-filmstrip
           </v-icon>
-          <v-icon
-            small
-            color="error"
-            @click="deleteMovie(item.id)"
-          >
-            mdi-delete
-          </v-icon>
+          <delete-movie-confirmation
+            :id="item.id"
+            :movie="item.movie"
+            @error="setAlert"
+          />
         </td>
       </template>
       <template v-slot:no-data>
@@ -79,11 +77,13 @@
 <script>
 import Firebase, { db } from '../firebase';
 import AddMovie from '../components/AddMovie.vue';
+import DeleteMovieConfirmation from '../components/DeleteMovieConfirmation.vue';
 
 export default {
   name: 'movies',
   components: {
     AddMovie,
+    DeleteMovieConfirmation,
   },
   data: () => ({
     unsubscribe: null,
@@ -132,15 +132,6 @@ export default {
       try {
         const result = await Firebase.updateMovie({ id, movie });
         if (result.message) throw new Error(result.message);
-      } catch (error) {
-        this.setAlert(true, 'error', error.message);
-      }
-      this.loading = false;
-    },
-    async deleteMovie(id) {
-      this.loading = true;
-      try {
-        await Firebase.deleteMovie(id);
       } catch (error) {
         this.setAlert(true, 'error', error.message);
       }
