@@ -98,15 +98,18 @@
         <router-view></router-view>
       </v-container>
     </v-content>
+    <app-footer />
   </v-app>
 </template>
 
 <script>
 import { mapState } from 'vuex';
 import Firebase, { firebaseAuth } from './firebase';
+import AppFooter from './components/AppFooter.vue';
 
 export default {
   name: 'App',
+  components: { AppFooter },
   data: () => ({
     drawer: false,
     authenticating: false,
