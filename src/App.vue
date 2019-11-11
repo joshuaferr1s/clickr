@@ -53,7 +53,7 @@
       <v-divider></v-divider>
 
       <v-list nav v-if="user">
-        <v-list-item link>
+        <v-list-item link to="movies">
           <v-list-item-icon>
             <v-icon>mdi-movie</v-icon>
           </v-list-item-icon>
@@ -62,7 +62,7 @@
             <v-list-item-title>Movies</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link>
+        <v-list-item link to="account">
           <v-list-item-icon>
             <v-icon>mdi-account</v-icon>
           </v-list-item-icon>

@@ -17,7 +17,8 @@
       :items="movies"
       :items-per-page="10"
       :search="search"
-      sort-by="movie"
+      sort-by="created_at"
+      sort-desc
       :loading="loading"
     >
       <template v-slot:top>
