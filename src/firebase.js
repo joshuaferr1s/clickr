@@ -145,20 +145,22 @@ Firebase.getUsers = async () => {
     const usersQuerySnapshot = await db.collection('users').get();
     const allowedQuerySnapshot = await db.collection('allowed').get();
     const adminsQuerySnapshot = await db.collection('admins').get();
-    const allowed = allowedQuerySnapshot.docs.map(doc => ({
+
+    const allowed = allowedQuerySnapshot.docs.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.data().allowed,
+    }), {});
+    const admins = adminsQuerySnapshot.docs.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.data().admin,
+    }), {});
+
+    const users = await Promise.all(usersQuerySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-    }));
-    const admins = adminsQuerySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const users = usersQuerySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      allowed: allowed.find(el => el.id === doc.id).allowed,
-      admin: admins.find(el => el.id === doc.id).admin,
-    }));
+      allowed: allowed[doc.id],
+      admin: admins[doc.id],
+    })));
     return users;
   } catch (error) {
     return error;

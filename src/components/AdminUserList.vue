@@ -20,7 +20,9 @@ export default {
   }),
   async created() {
     try {
-      this.users = await Firebase.getUsers();
+      const users = await Firebase.getUsers();
+      if (users.message) throw new Error();
+      this.users = users;
     } catch (error) {
       this.users = [];
     }
